@@ -5,7 +5,7 @@
 #  Originally licenced for WBAI (wbai.jp) under the Apache License (?)
 #  Created: 2015-07-18
 
-# TODO: name spaces, subports
+# TODO: import, subports
 
 import sys
 import numpy
@@ -16,6 +16,7 @@ class LanguageInterpreter:
     __unit_dic={}	# Map: BriCA unit name ⇒ unit object
     __jsn = None	# json object for a BriCA graph
     __super_modules={}	# Super modules
+    base_name_space=""	# Base Name Space
 
     def __init__(self):
         """ Create a new `LanguageInterpreter` instance.
@@ -41,6 +42,14 @@ class LanguageInterpreter:
 
         """
 	self.__jsn = json.load(file_object)
+	if not "Header" in self.__jsn:
+	    print >> sys.stderr, "Header must be specified!"
+	    return
+	header = self.__jsn["Header"]
+	if not "Base" in header:
+	    print >> sys.stderr, "Base name space must be specified!"
+	    return
+	self.base_name_space = header["Base"].strip()
 	self.__add_modules()
 	self.__add_ports()
 	self.__add_connections()
@@ -98,6 +107,7 @@ class LanguageInterpreter:
 	module_name = module["Name"].strip()
 	if module_name == "":
 	    return
+	module_name = self.__prefix_base_name_space(module_name)		# Prefixing the base name space
 	if "ImplClass" in module:
 	    # if an implementation class is specified
 	    implclass = module["ImplClass"].strip()
@@ -117,10 +127,18 @@ class LanguageInterpreter:
 	if "SuperModule" in module:
 	    supermodule=module["SuperModule"].strip()
 	    if supermodule != "":
+		supermodule = self.__prefix_base_name_space(supermodule)
 		self.__add_subunit(supermodule,module_name)
 	if "SubModules" in module:
 	    for submodule in module["SubModules"]:
+		submodule = self.__prefix_base_name_space(submodule)
 		self.__add_subunit(module_name,submodule) 
+
+    def __prefix_base_name_space(self, name):
+	if name.find("#")<0:
+	    return self.base_name_space + "#" + name
+	else:
+	    return name
 
     def __add_subunit(self, superunit, subunit):
 	if subunit in self.__super_modules:
@@ -170,6 +188,7 @@ class LanguageInterpreter:
     def __add_a_port(self, port):
 	try:
 	    port_module = port["Module"].strip()	# TODO: "Unit"?
+	    port_module = self.__prefix_base_name_space(port_module)
 	except KeyError:
 	    print >> sys.stderr, "Module not specified while adding a port!"
 	    return
@@ -235,6 +254,7 @@ class LanguageInterpreter:
 	    return
 	try:
 	    from_unit = connection["FromModule"]
+	    from_unit = self.__prefix_base_name_space(from_unit)
 	except KeyError:
 	    print >> sys.stderr, "FromModule not specified while adding a connection!"
 	    return
@@ -245,6 +265,7 @@ class LanguageInterpreter:
 	    return
 	try:
 	    to_unit = connection["ToModule"]
+	    to_unit = self.__prefix_base_name_space(to_unit)
 	except KeyError:
 	    print >> sys.stderr, "ToModule not specified while adding a connection!"
 	    return
