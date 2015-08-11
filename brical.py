@@ -68,17 +68,30 @@ class LanguageInterpreter:
 	# Checking grounding
 	sub_modules = self.__sub_modules()
 	for unit_key in self.__unit_dic:
-	    if (not unit_key in sub_modules) and (not isinstance(self.__unit_dic[unit_key], brica1.Component)):
-		print >> sys.stderr, "Module " + unit_key + " at the bottom not grounded as a Component!"
-		return
+	    if not unit_key in sub_modules:
+		try:
+		    module = self.__unit_dic[unit_key]
+		    component = module.get_component(unit_key)
+		    # TODO: Setting aliases here according to the current spec.
+		    for port in module.in_ports:
+			component.alias_in_port(module, port, port)
+		    for port in module.out_ports:
+			component.alias_out_port(module, port, port)
+		except KeyError:
+		    print >> sys.stderr, "Module " + unit_key + " at the bottom not grounded as a Component!"
+		    return
+	# Checking undefined modules
+	for unit_key in self.__super_modules:
+	    if not unit_key in self.__unit_dic:
+		print >> sys.stderr, "SuperModule " + unit_key + " not defined!"
+	for unit_key in sub_modules:
+	    if not unit_key in self.__unit_dic:
+		print >> sys.stderr, "SuperModule " + unit_key + " not defined!"
 	# Main logic
 	top_module = brica1.Module()
 	for unit_key in self.__unit_dic.keys():
 	    if not unit_key in self.__super_modules:
-		if isinstance(self.__unit_dic[unit_key], brica1.Component):
-		    top_module.add_component(unit_key, self.__unit_dic[unit_key])
-		    print "Adding a component " + unit_key + " to a BriCA agent."
-		elif isinstance(self.__unit_dic[unit_key], brica1.Module):
+		if isinstance(self.__unit_dic[unit_key], brica1.Module):
 		    top_module.add_submodule(unit_key, self.__unit_dic[unit_key])
 		    print "Adding a module " + unit_key + " to a BriCA agent."
 	agent = brica1.Agent(scheduler)
@@ -113,12 +126,12 @@ class LanguageInterpreter:
 	    implclass = module["ImplClass"].strip()
 	    if implclass != "":
 		print "Use the existing ImplClass " + implclass + " for " + module_name + "."
+		self.__unit_dic[module_name]=brica1.Module()	# New Module instance
 		try:
-		    self.__unit_dic[module_name]=eval(implclass+'()')
-		    # New ImplClass instance
+		    component = eval(implclass+'()')	# New ImplClass instance
+		    self.__unit_dic[module_name].add_component(module_name, component)
 		except:
 		    print >> sys.stderr, "Component " + implclass + " not found for " +  module_name + "!"
-		    self.__unit_dic[module_name]=brica1.Module()	# New Module instance
 	elif module_name in self.__unit_dic:
 	    pass	# TODO: Merge module properties
 	else:		# No pre-existing unit with the same name
@@ -154,10 +167,7 @@ class LanguageInterpreter:
 	if not superunit in self.__unit_dic:
 	    print >> sys.stderr, "SuperModule " + superunit + "has not been defined."
 	    return
-	if isinstance(self.__unit_dic[subunit], brica1.Component):
-	    self.__unit_dic[superunit].add_component(subunit, self.__unit_dic[subunit])
-	    print "Adding a component " + subunit + " to " + superunit + "."
-	elif isinstance(self.__unit_dic[unit_key], brica1.Module):
+	if isinstance(self.__unit_dic[subunit], brica1.Module):
 	    self.__unit_dic[superunit].add_submodule(subunit, self.__unit_dic[subunit])
 	    print "Adding a module " + subunit + " to " + superunit + "."
 
@@ -214,14 +224,39 @@ class LanguageInterpreter:
 	    if length < 1:
 		print >> sys.stderr, "Port dimension < 1!"
 		return
+	    # Checking if the module exists
 	    if port_module in self.__unit_dic:
 		module=self.__unit_dic[port_module]
 		if port_type == "Input":
+		    try:
+			len = module.get_in_port(port_name).buffer.shape[0]
+			if len!=length:
+			    print "Changing port length from " + len + " to " + length + " for " + port_name + " of " + module + "."
+		    except KeyError:
+			pass
 		    module.make_in_port(port_name, length)
 		    print "Creating an input port " + port_name + " with the length " + str(length) + " to " + port_module + "."
+		    try:
+			component = module.get_component(port_module)
+			component.make_in_port(port_name, length)
+			# component.alias_in_port(module, port_name, port_name)
+		    except KeyError:
+			pass
 		elif port_type == "Output":
+		    try:
+			len = module.get_out_port(port_name).buffer.shape[0]
+			if len!=length:
+			    print "Changing port length from " + len + " to " + length + " for " + port_name + " of " + module + "."
+		    except KeyError:
+			pass
 		    module.make_out_port(port_name, length)
 		    print "Creating an output port " + port_name + " with the length " + str(length) + " to " + port_module + "."
+		    try:
+			component = module.get_component(port_module)
+			component.make_out_port(port_name, length)
+			# component.alias_out_port(module, port_name, port_name)
+		    except KeyError:
+			pass
 		else:
 		    print >> sys.stderr, "Invalid port type!"
 	    else:
@@ -285,8 +320,8 @@ class LanguageInterpreter:
 	if ((not from_unit in self.__super_modules) and (not to_unit in self.__super_modules)) or \
 	(from_unit in self.__super_modules and to_unit in self.__super_modules and (self.__super_modules[from_unit] == self.__super_modules[to_unit])):
 	    try:
-		fr_port_obj = self.__unit_dic[from_unit].get_out_port(from_port)	# TODO: Name Space
-		to_port_obj = self.__unit_dic[to_unit].get_in_port(to_port)		# TODO: Name Space
+		fr_port_obj = self.__unit_dic[from_unit].get_out_port(from_port)
+		to_port_obj = self.__unit_dic[to_unit].get_in_port(to_port)
 		if fr_port_obj.buffer.shape != to_port_obj.buffer.shape:
 		    print >> sys.stderr, "Port dimension unmatch!"
 		    raise Error
@@ -299,8 +334,8 @@ class LanguageInterpreter:
 	# else if from_unit is the direct super module of the to_unit
 	elif to_unit in self.__super_modules and self.__super_modules[to_unit]==from_unit:
 	    try:
-		fr_port_obj = self.__unit_dic[from_unit].get_in_port(from_port)		# TODO: Name Space
-		to_port_obj = self.__unit_dic[to_unit].get_in_port(to_port)		# TODO: Name Space
+		fr_port_obj = self.__unit_dic[from_unit].get_in_port(from_port)
+		to_port_obj = self.__unit_dic[to_unit].get_in_port(to_port)
 		if fr_port_obj.buffer.shape != to_port_obj.buffer.shape:
 		    print >> sys.stderr, "Port dimension unmatch!"
 		    raise Error
@@ -313,8 +348,8 @@ class LanguageInterpreter:
 	# else if to_unit is the direct super module of the from_unit
 	elif from_unit in self.__super_modules and self.__super_modules[from_unit]==to_unit:
 	    try:
-		fr_port_obj = self.__unit_dic[from_unit].get_out_port(from_port)	# TODO: Name Space
-		to_port_obj = self.__unit_dic[to_unit].get_out_port(to_port)		# TODO: Name Space
+		fr_port_obj = self.__unit_dic[from_unit].get_out_port(from_port)
+		to_port_obj = self.__unit_dic[to_unit].get_out_port(to_port)
 		if fr_port_obj.buffer.shape != to_port_obj.buffer.shape:
 		    print >> sys.stderr, "Port dimension unmatch!"
 		    raise Error
