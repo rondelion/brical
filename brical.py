@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+brical.py
+=====
+
+This module contains the class `LanguageInterpreter` which interprets 
+the contents of BriCA language files.
+
+"""
+
 # BriCA Language Interpreter for V1 (Interpreter version 0)
 #  Originally licenced for WBAI (wbai.jp) under the Apache License (?)
 #  Created: 2015-07-18
@@ -13,6 +22,11 @@ import brica1
 import json
 
 class LanguageInterpreter:
+    """
+    The BriCA language interpreter.
+    - reads BriCA language files.
+    - creates a BriCA agent based on the file contents.
+    """
     __unit_dic={}	# Map: BriCA unit name ⇒ unit object
     __jsn = None	# json object for a BriCA graph
     __super_modules={}	# Super modules
@@ -121,6 +135,16 @@ class LanguageInterpreter:
 	if module_name == "":
 	    return
 	module_name = self.__prefix_base_name_space(module_name)		# Prefixing the base name space
+	if not module_name in self.__unit_dic:
+	    print "Create a new module instance"
+	    self.__unit_dic[module_name]=brica1.Module()	# New Module instance
+	    if module_name in self.__super_modules and self.__super_modules[module_name] in self.__unit_dic:
+		# Registering it as a submodule according to previously defined hierarchy.
+		self.__unit_dic[self.__super_modules[module_name]].add_submodule(self.__unit_dic[module_name])
+	    for submodule in self.__super_modules:
+		# Registering it as a supermodule according to previously defined hierarchy.
+		if self.__super_modules[submodule]==module_name and submodule in self.__unit_dic:
+		    self.__unit_dic[module_name].add_submodule(self.__unit_dic[submodule])
 	if "ImplClass" in module:
 	    # if an implementation class is specified
 	    implclass = module["ImplClass"].strip()
@@ -132,11 +156,6 @@ class LanguageInterpreter:
 		    self.__unit_dic[module_name].add_component(module_name, component)
 		except:
 		    print >> sys.stderr, "Component " + implclass + " not found for " +  module_name + "!"
-	elif module_name in self.__unit_dic:
-	    pass	# TODO: Merge module properties
-	else:		# No pre-existing unit with the same name
-	    print "Create a new module instance"
-	    self.__unit_dic[module_name]=brica1.Module()		# New Module instance
 	if "SuperModule" in module:
 	    supermodule=module["SuperModule"].strip()
 	    if supermodule != "":
