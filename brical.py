@@ -63,6 +63,8 @@ class LanguageInterpreter:
 	if not "Base" in header:
 	    print >> sys.stderr, "Base name space must be specified!"
 	    return
+	if "Type" in header:
+	    self.__type=header["Type"]
 	self.base_name_space = header["Base"].strip()
 	self.__add_modules()
 	self.__add_ports()
@@ -126,9 +128,12 @@ class LanguageInterpreter:
         Returns:
           None
         """
-        modules = self.__jsn["Modules"]
-        for module in modules:
-            self.__add_a_module(module)
+	if "Modules" in self.__jsn:
+	    modules = self.__jsn["Modules"]
+	    for module in modules:
+		self.__add_a_module(module)
+	else:
+	    print >> sys.stderr, "Warning: No `Modules` in the language file."
 
     def __add_a_module(self, module):
 	module_name = module["Name"].strip()
@@ -136,7 +141,7 @@ class LanguageInterpreter:
 	    return
 	module_name = self.__prefix_base_name_space(module_name)		# Prefixing the base name space
 	if not module_name in self.__unit_dic:
-	    print "Create a new module instance"
+	    print "Creating " + module_name + "."
 	    self.__unit_dic[module_name]=brica1.Module()	# New Module instance
 	    if module_name in self.__super_modules and self.__super_modules[module_name] in self.__unit_dic:
 		# Registering it as a submodule according to previously defined hierarchy.
@@ -150,7 +155,6 @@ class LanguageInterpreter:
 	    implclass = module["ImplClass"].strip()
 	    if implclass != "":
 		print "Use the existing ImplClass " + implclass + " for " + module_name + "."
-		self.__unit_dic[module_name]=brica1.Module()	# New Module instance
 		try:
 		    component = eval(implclass+'()')	# New ImplClass instance
 		    self.__unit_dic[module_name].add_component(module_name, component)
@@ -210,9 +214,12 @@ class LanguageInterpreter:
           None
 
         """
-        ports = self.__jsn["Ports"]
-        for port in ports:
-            self.__add_a_port(port)
+	if "Ports" in self.__jsn:
+	    ports = self.__jsn["Ports"]
+	    for port in ports:
+		self.__add_a_port(port)
+	else:
+	    print >> sys.stderr, "Warning: No `Ports` in the language file."
 
     def __add_a_port(self, port):
 	try:
@@ -248,34 +255,18 @@ class LanguageInterpreter:
 		module=self.__unit_dic[port_module]
 		if port_type == "Input":
 		    try:
-			len = module.get_in_port(port_name).buffer.shape[0]
-			if len!=length:
-			    print "Changing port length from " + len + " to " + length + " for " + port_name + " of " + module + "."
+			# Checking if the port has been defined
+			module.get_in_port(port_name)
 		    except KeyError:
-			pass
-		    module.make_in_port(port_name, length)
-		    print "Creating an input port " + port_name + " with the length " + str(length) + " to " + port_module + "."
-		    try:
-			component = module.get_component(port_module)
-			component.make_in_port(port_name, length)
-			# component.alias_in_port(module, port_name, port_name)
-		    except KeyError:
-			pass
+			module.make_in_port(port_name, length)
+			print "Creating an input port " + port_name + " (length " + str(length) + ") to " + port_module + "."
 		elif port_type == "Output":
 		    try:
-			len = module.get_out_port(port_name).buffer.shape[0]
-			if len!=length:
-			    print "Changing port length from " + len + " to " + length + " for " + port_name + " of " + module + "."
+			# Checking if the port has been defined
+			module.get_out_port(port_name)
 		    except KeyError:
-			pass
-		    module.make_out_port(port_name, length)
-		    print "Creating an output port " + port_name + " with the length " + str(length) + " to " + port_module + "."
-		    try:
-			component = module.get_component(port_module)
-			component.make_out_port(port_name, length)
-			# component.alias_out_port(module, port_name, port_name)
-		    except KeyError:
-			pass
+			module.make_out_port(port_name, length)
+			print "Creating an output port " + port_name + " (length " + str(length) + ") to " + port_module + "."
 		else:
 		    print >> sys.stderr, "Invalid port type!"
 	    else:
@@ -295,9 +286,13 @@ class LanguageInterpreter:
           None
 
         """
-        connections = self.__jsn["Connections"]
-        for connection in connections:
-            self.__add_a_connection(connection)
+	if "Connections" in self.__jsn:
+	    connections = self.__jsn["Connections"]
+	    for connection in connections:
+		self.__add_a_connection(connection)
+	else:
+	    if self.__type!="C":
+		print >> sys.stderr, "Warning: No `Connections` in the language file."
 
     def __add_a_connection(self, connection):
 	# TODO: Port length check
