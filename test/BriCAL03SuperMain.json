@@ -1,0 +1,69 @@
+{
+"Header": {
+"Type" : "A",
+"Name" : "SuperMain",
+"Base" : "Base",
+"Comment" : "最初のBriCA言語ファイル・SuperMain⇔MainModule"
+},
+
+"Modules" : [{
+"Name" : "BriCA1#MainModule",
+"Ports" : [ "Port1", "Port2" ],
+"SuperModule" : "SuperMainModule",
+"Comment" : "最初の処理モジュール"
+},
+{
+"Name" : "SuperMainModule",
+"Ports" : [ "PortS1", "PortS2" ],
+"Comment" : "最初の処理モジュールの上位モジュール"
+}
+],
+
+"Ports" : [{
+"Name" : "Port1",
+"Module" : "BriCA1#MainModule",
+"Type" : "Input",
+"Dimension" : [3,1,1],
+"Comment" : "最初の処理モジュールの入力ポート"
+},
+{
+"Name" : "Port2",
+"Module" : "BriCA1#MainModule",
+"Type" : "Output",
+"Dimension" : [3,1,1],
+"Comment" : "最初の処理モジュールの出力ポート"
+},
+{
+"Name" : "PortS1",
+"Module" : "SuperMainModule",
+"Type" : "Input",
+"Dimension" : [3,1,1],
+"Comment" : "最初の処理モジュールの上位モジュールの入力ポート"
+},
+{
+"Name" : "PortS2",
+"Module" : "SuperMainModule",
+"Type" : "Output",
+"Dimension" : [3,1,1],
+"Comment" : "最初の処理モジュールの上位モジュールの出力ポート"
+}
+],
+
+"Connections" : [{
+"Name" : "Con3",
+"FromModule" : "SuperMainModule",
+"FromPort" : "PortS1",
+"ToModule" : "BriCA1#MainModule",
+"ToPort" : "Port1",
+"Comment" : "最初の処理モジュールの上位モジュールの入力ポートから最初の処理モジュールの入力ポートへの結線"
+},
+{
+"Name" : "Con4",
+"FromModule" : "BriCA1#MainModule",
+"FromPort" : "Port2",
+"ToModule" : "SuperMainModule",
+"ToPort" : "PortS2",
+"Comment" : "最初の処理モジュールの出力ポートから最初の処理モジュールの上位モジュールの出力ポートへの結線"
+}
+]
+}

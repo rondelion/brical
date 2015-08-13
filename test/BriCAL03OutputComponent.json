@@ -1,0 +1,26 @@
+{
+"Header": {
+"Type" : "C",
+"Name" : "OutputComponent",
+"Base" : "BriCA1",
+"Comment" : "Implements NullComponent"
+},
+
+"Modules" : [{
+"Name" : "OutputModule",
+"Ports" : [ "OutputModulePort" ],
+"ImplType" : "BriCA",
+"ImplClass" : "brica1.NullComponent",
+"Comment" : "最初の出力モジュール"
+}
+],
+
+"Ports" : [{
+"Name" : "OutputModulePort",
+"Module" : "OutputModule",
+"Type" : "Input",
+"Dimension" : [3,1,1],
+"Comment" : "最初の出力モジュールの入力ポート"
+}
+]
+}

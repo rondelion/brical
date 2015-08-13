@@ -1,0 +1,33 @@
+{
+"Header": {
+"Type" : "C",
+"Name" : "MainComponent",
+"Base" : "BriCA1",
+"Comment" : "Implements PipeComponent"
+},
+
+"Modules" : [{
+"Name" : "MainModule",
+"Ports" : [ "Port1", "Port2" ],
+"ImplType" : "BriCA",
+"ImplClass" : "brica1.PipeComponent",
+"Comment" : "最初の処理モジュール"
+}
+],
+
+"Ports" : [{
+"Name" : "Port1",
+"Module" : "MainModule",
+"Type" : "Input",
+"Dimension" : [3,1,1],
+"Comment" : "入力ポート"
+},
+{
+"Name" : "Port2",
+"Module" : "MainModule",
+"Type" : "Output",
+"Dimension" : [3,1,1],
+"Comment" : "出力ポート"
+}
+]
+}
