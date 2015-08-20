@@ -22,14 +22,14 @@
 "Name" : "InputModulePort",
 "Module" : "BriCA1.InputModule",
 "Type" : "Output",
-"Dimension" : [3,1,1],
+"Shape" : [3,1,1],
 "Comment" : "最初の入力モジュールの出力ポート"
 },
 {
 "Name" : "PortS1",
 "Module" : "SuperMainModule",
 "Type" : "Input",
-"Dimension" : [3,1,1],
+"Shape" : [3,1,1],
 "Comment" : "最初の処理モジュールの上位モジュールの入力ポート"
 }
 ],

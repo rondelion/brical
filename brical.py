@@ -239,9 +239,9 @@ class LanguageInterpreter:
 	    print >> sys.stderr, "Name not specified while adding a port!"
 	    return
 	try:
-	    dimension = port["Dimension"]
+	    dimension = port["Shape"]
 	except KeyError:
-	    print >> sys.stderr, "Dimension not specified while adding a port!"
+	    print >> sys.stderr, "Shape not specified while adding a port!"
 	    return
 	try:
 	    length = 1
@@ -272,7 +272,7 @@ class LanguageInterpreter:
 	    else:
 		print >> sys.stderr, "Module " + port_module + " not found!"
 	except ValueError:
-	    print >> sys.stderr, "Dimension error for the port " + port_name + "!"
+	    print >> sys.stderr, "Shape error for the port " + port_name + "!"
 	except:
 	    print >> sys.stderr, "Error creating a port " + port_name + " with the length " + str(length) + " to " + port_module + "."
 

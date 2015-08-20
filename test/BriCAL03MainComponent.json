@@ -19,14 +19,14 @@
 "Name" : "Port1",
 "Module" : "MainModule",
 "Type" : "Input",
-"Dimension" : [3,1,1],
+"Shape" : [3,1,1],
 "Comment" : "入力ポート"
 },
 {
 "Name" : "Port2",
 "Module" : "MainModule",
 "Type" : "Output",
-"Dimension" : [3,1,1],
+"Shape" : [3,1,1],
 "Comment" : "出力ポート"
 }
 ]
