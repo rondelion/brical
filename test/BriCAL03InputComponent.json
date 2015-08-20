@@ -9,7 +9,7 @@
 "Modules" : [{
 "Name" : "InputModule",
 "Ports" : [ "InputModulePort" ],
-"ImplType" : "BriCA",
+"ImplType" : "BriCA1",
 "ImplClass" : "brica1.ConstantComponent",
 "Comment" : "最初の入力モジュール"
 }

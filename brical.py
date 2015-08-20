@@ -171,8 +171,8 @@ class LanguageInterpreter:
 		self.__add_subunit(module_name,submodule) 
 
     def __prefix_base_name_space(self, name):
-	if name.find("#")<0:
-	    return self.base_name_space + "#" + name
+	if name.find(".")<0:
+	    return self.base_name_space + "." + name
 	else:
 	    return name
 

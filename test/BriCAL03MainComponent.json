@@ -9,7 +9,7 @@
 "Modules" : [{
 "Name" : "MainModule",
 "Ports" : [ "Port1", "Port2" ],
-"ImplType" : "BriCA",
+"ImplType" : "BriCA1",
 "ImplClass" : "brica1.PipeComponent",
 "Comment" : "最初の処理モジュール"
 }

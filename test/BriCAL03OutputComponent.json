@@ -9,7 +9,7 @@
 "Modules" : [{
 "Name" : "OutputModule",
 "Ports" : [ "OutputModulePort" ],
-"ImplType" : "BriCA",
+"ImplType" : "BriCA1",
 "ImplClass" : "brica1.NullComponent",
 "Comment" : "最初の出力モジュール"
 }
