@@ -90,8 +90,12 @@ class LanguageInterpreter:
 		    component = module.get_component(unit_key)
 		    # TODO: Setting aliases here according to the current spec.
 		    for port in module.in_ports:
+			length=module.get_in_port(port).buffer.shape[0]
+			component.make_in_port(port, length)
 			component.alias_in_port(module, port, port)
 		    for port in module.out_ports:
+			length=module.get_out_port(port).buffer.shape[0]
+			component.make_out_port(port, length)
 			component.alias_out_port(module, port, port)
 		except KeyError:
 		    print >> sys.stderr, "Module " + unit_key + " at the bottom not grounded as a Component!"
